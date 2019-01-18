@@ -1,0 +1,59 @@
+How I engineered the features?
+1) n-grams: At the onset, I realized that training on words alone is not going to be sufficient, as it is possible that words seen in training data are
+   not repeated later. It is more important to understand inherent "structure" of each language. I started using unigrams and trigrams.
+   n-grams are particularly useful for languages like Chinese and Japanese, in which characters themselves can be words.
+   I used stratified train and test sets to make sure each class got the right ratio in the training and testing sets (as some classes
+   were skewed- this can be seen in the classification reports below with `ceb` having 29 examples but `en` having 446 examples.
+2) Unique nature of Roman Alphabet languages: I used confusion matrix and classification reports to understand precision, recall and F1-scores. I also saw which examples
+   were being consistently misclassified by the neural network. It seems like some examples just have digits or punctuations - and are really
+   hard to classify. This process also enabled me to realize that roman alphabet languages do not perform well in general - and one reason could
+   be that they all share characters.
+3) This made me go to using Linear Model to first guess if the text is possibly in one of the roman alphabet languages or not.
+   This information is then used by the preprocessing stage to use character level tokens or not.
+   In summary,
+   Roman Alphabet Languages use words and trigrams.
+   All other languages use words, unigrams and trigrams.
+   This information is derived from linear model first predicting whether it thinks its a roman alphabet language or not.
+
+How I chose the best model? (also in performance.txt)
+1) Data Understanding: First step was to understand the data. There are around 122k training examples, and 56 different language labels.
+   This is a problem of multi-class text classification. I wanted to start with a linear model first and build from there.
+2) Data Preparation: At the onset, I realized that training on words alone is not going to be sufficient, as it is possible that words seen in training data are
+   not repeated later. It is more important to understand inherent "structure" of each language. I started using unigrams and trigrams.
+   n-grams are particularly useful for languages like Chinese and Japanese, in which characters themselves can be words.
+   I used stratified train and test sets to make sure each class got the right ratio in the training and testing sets (as some classes
+   were skewed- this can be seen in the classification reports below with `ceb` having 29 examples but `en` having 446 examples.
+3) Linear Model: I used Logistic Regression Classifier with Stochastic Gradient Descent (to speed up the learning process).
+   To evaluate the model, I used learning curve to understand bias and variance (with a cross validation data set). This was important esp. to decide if I wanted to use
+   neural network at all or not. Based on learning curve analysis, it was clear that linear model had high bias as well as some variance.
+   Accuracy alone is not sufficient for skewed data set, weighted F1-score of 0.79 was achieved via linear model.
+4) Neural Network: I used a basic 2-layer neural network with first layer of neurons (and relu activation) followed by a linear layer.
+   I compared training and test accuracy to understand bias and variance. With something akin to grid search, I zeroed on 50,000 words and
+   512 neurons for the first layer. This iterative process helped me choose a Dropout of 0.5 and 2 epochs.
+5) Model Evaluation: I used confusion matrix and classification reports to understand precision, recall and F1-scores. I also saw which examples
+   were being consistently misclassified by the neural network. It seems like some examples just have digits or punctuations - and are really
+   hard to classify. This process also enabled me to realize that roman alphabet languages do not perform well in general - and one reason could
+   be that they all share characters.
+6) Linear Model followed by Neural Network: This made me go to using Linear Model to first guess if the text is possibly in one of the roman alphabet languages or not.
+   By low performing, I mean the ones with low F1-scores. This information is then used by the preprocessing stage to use character level tokens or not.
+   This process enables the F1-score to reach between 0.80 and 0.81.
+7) Saving the Models to Predict: The neural network has been saved in a h5 file, and label encoder and tokenizer in pickle files. Linear Model
+   is also saved in pickle file.
+
+What would I have done if I had extra time?
+1) Evaluated using tree based model up-front to separate the languages into Roman script or Not Roman Script.
+   I used linear model here which is also classifying into one of the 56 languages and whose input is then used to feature engineer for neural network.
+   It will be better to have binary classifier here instead.
+2) I used Keras to build the neural network here, with more time I would have written in TensorFlow to optimize at the low-level even more.
+3) With more time, I would write a proper script to do grid search for hyper-parameters.
+
+Total Time Spent: 5-6 evenings
+
+Software Dependencies: Details of these in requirements.txt (including version numbers).
+But overall main libraries for machine learning: numpy, pandas, keras (with tensorflow backend), seaborn, scikit-learn and nltk
+
+Model Binary: `neural_network_language.h5` is the main neural network. neural_network_label_encoder.pickle and neural_network_tokenizer.pickle are
+label encoder and tokenizer respectively for data preparation. `linear_model.pickle` is serialized linear model which is used by the data preparation
+stage of neural network.
+
+Overall, it was fun to play around with the language dataset!
